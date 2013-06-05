@@ -1,0 +1,12 @@
+[
+  { "basePath": "./modules",
+    "entry": "Root",
+    "filter": ["\\.js$"],
+    "output": "root.con.js"
+  },
+  { "basePath": "./modules",
+    "entry": "ModC",
+    "filter": ["\\.js$"],
+    "output": "modc.con.js"
+  }
+]

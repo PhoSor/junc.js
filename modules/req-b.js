@@ -1,0 +1,5 @@
+/**
+ * @provide ModB
+ * @require ModBA
+ */
+

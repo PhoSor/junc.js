@@ -1,0 +1,10 @@
+{
+  "name": "moduler",
+  "description": "",
+  "version": "0.1.0",
+  "author": "pho",
+  "bin": "./index.js",
+  "scripts": {
+    "start": "node index"
+  }
+}

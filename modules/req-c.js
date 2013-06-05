@@ -1,0 +1,5 @@
+/**
+ * @provide ModC
+ * @require ModAA
+ */
+
