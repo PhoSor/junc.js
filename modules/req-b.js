@@ -1,5 +1,4 @@
 /**
- * @provide ModB
- * @require ModBA
+ * @require req-ba
  */
 

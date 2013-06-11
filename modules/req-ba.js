@@ -1,4 +1,4 @@
 /**
- * @provide ModBA
+ * ba
  */
 

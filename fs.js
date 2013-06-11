@@ -2,6 +2,7 @@ var fs = require('fs'),
     path = require('path'),
     async = require('./async');
 
+
 function readDir(basePath, options, done) {
 
   function readFile(fileName, done) {
@@ -11,7 +12,8 @@ function readDir(basePath, options, done) {
       if (stats.isDirectory()) {
         readDir(filePath, options, done);
       } else if (stats.isFile()) {
-        var i, pattern;
+        var i, pattern,
+            file = {path: filePath, content: '', mtime: stats.mtime};
 
         for (i = 0; i < options.filter.length; i++) {
           pattern = options.filter[i];
@@ -29,13 +31,14 @@ function readDir(basePath, options, done) {
           }
         }
 
-        fs.readFile(filePath, {encoding: 'utf8'}, function(error, content) {
+        /* fs.readFile(filePath, {encoding: 'utf8'}, function(error, content) {
           if (error) done(error, null);
 
           var file = {path: filePath, content: content};
 
           done(error, file);
-        });
+        }); */
+        done(error, file);
       }
     });
   }
@@ -47,6 +50,7 @@ function readDir(basePath, options, done) {
   fileNames = fs.readdirSync(basePath);
   async.map(fileNames, readFile, filesRead);
 }
+
 
 function flatten(array, results) {
   var results = results || [];
@@ -63,8 +67,7 @@ function flatten(array, results) {
 }
 
 
-
-fs.readFiles = function(basePath, options, done) {
+fs.readStats = function(basePath, options, done) {
   readDir(basePath, options, function(error, files) {
     var results = flatten(files);
 
@@ -85,8 +88,8 @@ fs.readJSON = function(filePath) {
   return json;
 };
 
-fs.join = function() {
-  return path.join.apply({}, arguments);
-};
+
+fs.join = path.join;
+
 
 module.exports = fs;

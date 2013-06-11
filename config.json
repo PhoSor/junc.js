@@ -1,12 +1,10 @@
 [
   { "basePath": "./modules",
-    "entry": "Root",
-    "filter": ["\\.js$"],
+    "entry": "root.ololo",
     "output": "root.con.js"
   },
   { "basePath": "./modules",
-    "entry": "ModC",
-    "filter": ["\\.js$"],
+    "entry": "req-c",
     "output": "modc.con.js"
   }
 ]

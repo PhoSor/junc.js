@@ -1,5 +1,4 @@
 /**
- * @provide ModC
- * @require ModAA
+ * @require req-aa
  */
 

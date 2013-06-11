@@ -1,5 +1,4 @@
 /**
- * @provide ModA
- * @require ModAA
- * @require ModAB
+ * @require req-aa
+ * @require req-ab
  */

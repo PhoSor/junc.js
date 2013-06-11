@@ -1,19 +1,29 @@
 #!/usr/bin/env node
 
-var fs = require('./fs'),
+var async = require('./async'),
+    fs = require('./fs'),
     Deps = require('./graph');
 
 var configName = process.argv[2] || 'config.json',
     configs = fs.readJSON(configName),
     commentRegExp = /\/\*\*[\s\S]*?\*\//,
-    provideRegExp = /@provide[\s]*([\w\.]+)/,
-    requireRegExp = /@require[\s]*([\w\.]+)/g,
-    outputs = [];
+    requireRegExp = /@require[\s]*([\S]+)/g,
+    extRegExp = /\.js$/,
+    ext = '.js', outputs = [],
+    fileCache = {};
 
+
+/**
+ * Помощник. Возвращает RegExp из строки.
+ */
 function regexp(pattern) {
   return new RegExp(pattern);
 }
 
+
+/**
+ * Нормализует поле фильтруемых и откляняемых файлов в конфигурации.
+ */
 configs.forEach(function(config) {
   outputs.push(config.output);
 
@@ -21,41 +31,75 @@ configs.forEach(function(config) {
   config.reject = (config.reject || []).map(regexp);
 });
 
+
+/**
+ * Основная работа для каждой конфигурции.
+ */
 configs.forEach(function(config) {
+  /** Общие настройки фильтруемых и откланяемых файлов. */
   var options = {
-    filter: config.filter,
-    reject: config.reject.concat(outputs)
+    filter: config.filter.concat([extRegExp]),
+    reject: config.reject
   };
 
-  fs.readFiles(config.basePath, options, function(error, files) {
-    var output, fileContent, resolved, provides = {}, deps = new Deps;
+  /** Помощник. Расширяет имя файла до его полного пути. */
+  function name2path(name) {
+    return fs.join(config.basePath, name + ext);
+  }
 
-    files.forEach(function(file) {
+  /** Помощник. Читает файл и возвращает объект
+   * с именем файла и его содержимым. */
+  function readFile(filePath, done) {
+    fs.readFile(filePath, function(error, data) {
+      done(error, {path: filePath, content: data});
+    });
+  }
+
+  /** Читает статус файлов с применением фильтров. */
+  fs.readStats(config.basePath, options, function(error, files) {
+    var output, outputFilePath = '', resolved = [], deps = new Deps;
+
+    // console.log(error, files);
+    /* files.forEach(function(file) {
       var comment, provide, require, requires = [];
 
       comment = file.content.match(commentRegExp);
       if (comment) {
         comment = comment[0];
-        provide = comment.match(provideRegExp)[1];
 
         require = requireRegExp.exec(comment);
         while (require) {
-          requires.push(require[1]);
+          require = name2path(require[1]);
+          requires.push(require);
           require = requireRegExp.exec(comment);
         }
-        deps.add(provide, requires);
-        provides[provide] = file;
+        // console.log(file.path, requires);
       }
-    });
+      deps.add(file.path, requires);
+      // provides[file.path] = file;
+    }); */
+
+    resolved = deps.getResolved(name2path(config.entry));
 
     output = fs.createWriteStream(fs.join(config.basePath, config.output));
-    resolved = deps.getResolved(config.entry);
-    resolved.forEach(function(provideName) {
+    async.map(resolved, readFile, function(error, files) {
+      var filesContent = {};
+      // console.log(resolved, files);
+
+      files.forEach(function(file) {
+        filesContent[file.path] = file.content;
+      });
+      resolved.forEach(function(filePath) {
+        output.write(filesContent[filePath]);
+      });
+      output.end();
+      console.log(config.output, resolved);
+    });
+
+    /* resolved.forEach(function(provideName) {
       fileContent = provides[provideName].content;
       output.write(fileContent);
-    });
-    output.end();
-    console.log(config.output, resolved);
+    }); */
   });
 });
 

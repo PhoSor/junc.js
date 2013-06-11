@@ -20,20 +20,6 @@ Graph.prototype.add = function(name, childNames) {
 };
 
 
-Graph.prototype.getRoot = function() {
-  var i, node;
-
-  for (i = 0; i < this.nodeList.length; i++) {
-    node = this.nodeList[i];
-    if (node.parents === 0) {
-      break;
-    }
-  }
-
-  return node;
-};
-
-
 Graph.prototype.populateRelations = function() {
   var graph = this;
 
@@ -69,10 +55,15 @@ Graph.prototype.resolve = function(node, unresolved) {
 
 
 Graph.prototype.getResolved = function(rootName) {
-  var resolved = [];
+  var root, resolved = [];
 
   this.populateRelations();
-  resolved = this.resolve(this.nodes[rootName]);
+  root = this.nodes[rootName];
+  if (root) {
+    resolved = this.resolve(root);
+  } else {
+    throw new Error('Node not found: ' + rootName);
+  }
 
   return resolved;
 };

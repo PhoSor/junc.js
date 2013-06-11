@@ -1,5 +1,4 @@
 /**
- * @provide Root
- * @require ModA
- * @require ModB
+ * @require req-a
+ * @require req-b
  */
