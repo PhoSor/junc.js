@@ -1,4 +1,12 @@
 /**
- * @require req-aa
+ * ba
+ */
+
+/**
+ * @require req-ba
+ */
+
+/**
+ * @require req-b
  */
 
