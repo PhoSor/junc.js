@@ -1,4 +1,0 @@
-/**
- * @require req-b
- */
-

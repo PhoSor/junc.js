@@ -1,0 +1,7 @@
+[
+  { "basePath": ".",
+    "defaultModules": ["base"],
+    "entry": "mod-a",
+    "output": "mod-a.con.js"
+  }
+]
