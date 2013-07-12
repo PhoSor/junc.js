@@ -1,102 +1,71 @@
-var path = require('path'),
-    async = require('./async'),
-    fs = require('./fs'),
-    _ = require('./underscore');
+/**
+ * @fileoverview Junc.js.
+ * @author pho.nzp@gmail.com (Andrey Sorokin)
+ * @license MIT.
+ */
 
-var configName = process.argv[2] || 'config.json',
-    configs = fs.readJSON(configName),
-    commentRegExp = /\/\*\*[\s\S]*?\*\//,
-    requireRegExp = /@require[\s]*([\S]+)/g,
-    ext = '.js';
+
+/** Зависимости. */
+var make = require('./make');
+
+
+/**  */
+var junc = exports = module.exports = {};
 
 
 /**
- * Основная работа для каждой конфигурции.
+ * @const {string}
  */
-configs.forEach(function(config) {
-  var outputModified, configPath = path.dirname(configName),
-      outputFilePath = path.join(configPath, config.basePath, config.output);
+var EXT = '.js';
 
-  config.defaultModules = config.defaultModules || [];
 
-  /** Помощник. Расширяет имя файла до его полного пути. */
-  function name2path(name) {
-    return path.join(configPath, config.basePath, name + ext);
-  }
+/** @enum {RegExp} */
+var regexp = {
+  COMMENT: /\/\*\*[\s\S]*?\*\//,
+  REQUIRE: /@require[\s]*([\S]+)/g
+};
 
-  function getRequires(text) {
-    var comment, require, requires = [];
 
-    comment = text.match(commentRegExp);
-    if (comment) {
-      comment = comment[0];
 
-      require = requireRegExp.exec(comment);
-      while (require) {
-        requires.push(require[1]);
-        require = requireRegExp.exec(comment);
-      }
+/**
+ * @param {Object|Array.<Object>} configs Объект или массив конфигураций.
+ * @constructor
+ */
+function Junc(configs) {
+  this.configs = configs;
+  this.type = make.type(configs);
+}
+
+
+/**
+ * Вызывает указанную функцию с каждой конфигурацией.
+ * @param {function(Object)} fn Функция
+ * вызываемая с объектом конфигурации.
+ */
+Junc.prototype.each = function(fn) {
+  if (this.type == 'array') { this.configs.forEach(fn); }
+  if (this.type == 'object') { fn(this.configs); }
+};
+
+
+/**
+ * Возвращает массив зависимостей.
+ * @param {string} text Текст.
+ * @return {Array.<string>}
+ */
+Junc.prototype.getRequires = function(text) {
+  var comment, require, requires = [];
+
+  comment = text.match(regexp.COMMENT);
+  if (comment) {
+    comment = comment[0];
+
+    require = regexp.REQUIRE.exec(comment);
+    while (require) {
+      requires.push(require[1]);
+      require = regexp.REQUIRE.exec(comment);
     }
-
-    return requires;
   }
 
-  function readFile(name, done) {
-    var filePath = name2path(name), stat = fs.statSync(filePath),
-        file = {path: filePath, mtime: stat.mtime};
-
-    fs.readFile(filePath, function(error, data) {
-      if (error) throw error;
-
-      var requires = [], text = data.toString();
-
-      file.content = data;
-      requires = getRequires(text);
-      if (requires.length) {
-        async.map(requires, readFile, function(error, files) {
-          files.push(file);
-          done(error, files);
-        });
-      } else {
-        done(error, file);
-      }
-    });
-  }
-
-  if (fs.existsSync(outputFilePath)) {
-    outputModified = fs.statSync(outputFilePath).mtime;
-  } else {
-    outputModified = 0;
-  }
-
-  async.parallel({
-    defaultModules: function(done) {
-      async.map(config.defaultModules, readFile, done);
-    },
-    requireModules: function(done) {
-      async.map([config.entry], readFile, done);
-    }
-  }, function(error, results) {
-    var modified = false, seen = [], files = [];
-
-    files = results.defaultModules.concat(_.flatten(results.requireModules));
-    modified = files.some(function(file) {
-      return file.mtime > outputModified;
-    });
-
-    if (modified) {
-      output = fs.createWriteStream(outputFilePath);
-      files.forEach(function(file) {
-        if (seen.indexOf(file.path) < 0) {
-          output.write(file.content);
-          seen.push(file.path);
-        }
-      });
-      output.end();
-      console.log(config.output, seen);
-    } else {
-      console.log(config.output, 'not modified.', seen);
-    }
-  });
-});
-
+  return requires;
+};
