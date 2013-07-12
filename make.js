@@ -5,8 +5,8 @@
  */
 
 
-/** Создает объект экспорта. */
-var make = exports = module.exports = {};
+/** Определяет экспорт. */
+var make = module.exports;
 
 
 /**
