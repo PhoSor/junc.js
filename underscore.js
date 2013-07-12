@@ -16,17 +16,17 @@ var underscore = module.exports;
  * @param {Array} results Промежуточный результат.
  * @return {Array}
  */
-function flatten(array, results) {
+underscore.flatten = function(array, results) {
   var results = results || [];
 
   array.forEach(function(item) {
     if (item instanceof Array) {
-      flatten(item, results);
+      underscore.flatten(item, results);
     } else {
       results.push(item);
     }
   });
 
   return results;
-}
+};
 

@@ -10,7 +10,7 @@ var fs = require('fs');
 
 
 /** Определяет экспорт. */
-var fs = module.exports;
+module.exports = fs;
 
 
 /**
