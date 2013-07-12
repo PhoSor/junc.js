@@ -1,3 +1,21 @@
+/**
+ * @fileoverview Альтернативная реалиция требуемых функций
+ * одноименной(underscore.js) библиотеки.
+ * @author pho.nzp@gmail.com (Andrey Sorokin)
+ * @license MIT.
+ */
+
+
+/** Определяет экспорт. */
+var underscore = module.exports;
+
+
+/**
+ * Рекурсивно "сплющивает" многомерный массив в одномерный.
+ * @param {Array} array Сжимаемый массив.
+ * @param {Array} results Промежуточный результат.
+ * @return {Array}
+ */
 function flatten(array, results) {
   var results = results || [];
 
@@ -12,4 +30,3 @@ function flatten(array, results) {
   return results;
 }
 
-exports.flatten = flatten;

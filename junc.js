@@ -9,8 +9,8 @@
 var make = require('./make');
 
 
-/**  */
-var junc = exports = module.exports = {};
+/** Определяет экспорт. */
+var junc = module.exports;
 
 
 /**
