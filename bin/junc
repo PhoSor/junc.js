@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+
+var path = require('path'),
+    async = require('../lib/async'),
+    fs = require('../lib/fs'),
+    _ = require('../lib/underscore'),
+    junc = require('../lib/junc');
+
+
+/**
+ * @const {string}
+ */
+var EXT = '.js';
+
+
+var configFilename = process.argv[2] || 'config.json',
+    configJSON = fs.readJSON(configFilename),
+    ext = '.js';
+
+
+configs = junc(configJSON);
+
+
+/**
+ * Основная работа для каждой конфигурции.
+ */
+configs.each(function(config) {
+  var outputModified, configPath = path.dirname(configFilename),
+      outputFilePath = path.join(configPath, config.basePath, config.output);
+
+  config.defaultModules = config.defaultModules || [];
+
+  /** Помощник. Расширяет имя файла до его полного пути. */
+  function name2path(name) {
+    return path.join(configPath, config.basePath, name + ext);
+  }
+
+  function readFile(name, done) {
+    var filePath = name2path(name), stat = fs.statSync(filePath),
+        file = {path: filePath, mtime: stat.mtime};
+
+    fs.readFile(filePath, function(error, data) {
+      if (error) throw error;
+
+      var requires = [], text = data.toString();
+
+      file.content = data;
+      requires = junc.getRequires(text);
+      if (requires.length) {
+        async.map(requires, readFile, function(error, files) {
+          files.push(file);
+          done(error, files);
+        });
+      } else {
+        done(error, file);
+      }
+    });
+  }
+
+  if (fs.existsSync(outputFilePath)) {
+    outputModified = fs.statSync(outputFilePath).mtime;
+  } else {
+    outputModified = 0;
+  }
+
+  async.parallel({
+    defaultModules: function(done) {
+      async.map(config.defaultModules, readFile, done);
+    },
+    requireModules: function(done) {
+      async.map([config.entry], readFile, done);
+    }
+  }, function(error, results) {
+    var modified = false, seen = [], files = [];
+
+    files = results.defaultModules.concat(_.flatten(results.requireModules));
+    modified = files.some(function(file) {
+      return file.mtime > outputModified;
+    });
+
+    if (modified) {
+      output = fs.createWriteStream(outputFilePath);
+      files.forEach(function(file) {
+        if (seen.indexOf(file.path) < 0) {
+          output.write(file.content);
+          seen.push(file.path);
+        }
+      });
+      output.end();
+      console.log(config.output, seen);
+    } else {
+      console.log(config.output, 'not modified.', seen);
+    }
+  });
+});
+
