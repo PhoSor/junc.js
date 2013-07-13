@@ -1,3 +1,5 @@
-#!/usr/bin/env node
 
-var junc = require('./junc');
+
+/** Определяет экспорт. */
+module.exports = require('./lib/junc');
+

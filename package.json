@@ -3,9 +3,9 @@
   "description": "",
   "version": "0.4.0",
   "author": "pho",
-  "bin": {"junc": "./index.js"},
+  "main": "./index.js",
+  "bin": {"junc": "./bin/junc"},
   "scripts": {
-    "start": "node index",
     "test": "jasmine-node test/spec --verbose"
   },
   "devDependencies": {}
