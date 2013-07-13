@@ -1,4 +1,4 @@
-var make = require('../../make');
+var make = require('../../lib/make');
 
 describe('make', function() {
   describe('type', function() {

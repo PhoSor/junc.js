@@ -1,4 +1,4 @@
-var async = require('../../async');
+var async = require('../../lib/async');
 
 describe('Async', function() {
   var noop = function(value, done) { done(null, value) };

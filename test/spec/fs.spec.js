@@ -1,7 +1,7 @@
 var mockCoreMods = require('../support/mock-core-modules');
 mockCoreMods.enable();
 
-var fs = require('../../fs');
+var fs = require('../../lib/fs');
 
 describe('Расширенный fs', function() {
   describe('readJSON', function() {

@@ -1,4 +1,4 @@
-var _ = require('../../underscore');
+var _ = require('../../lib/underscore');
 
 
 describe('Underscore', function() {
