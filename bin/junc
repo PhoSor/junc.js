@@ -14,8 +14,7 @@ var EXT = '.js';
 
 
 var configFilename = process.argv[2] || 'config.json',
-    configJSON = fs.readJSON(configFilename),
-    ext = '.js';
+    configJSON = fs.readJSON(configFilename);
 
 
 configs = junc(configJSON);
@@ -32,7 +31,7 @@ configs.each(function(config) {
 
   /** Помощник. Расширяет имя файла до его полного пути. */
   function name2path(name) {
-    return path.join(configPath, config.basePath, name + ext);
+    return path.join(configPath, config.basePath, name + EXT);
   }
 
   function readFile(name, done) {
